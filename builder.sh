@@ -42,6 +42,16 @@ for repo_info in "${repos[@]}"; do
   clone_or_update_repo "$repo" "$url"
 done
 
+sed -i '' 's/QString direct_ip;/QString direct_ip = "geoip:cn\\ngeoip:private";/' nekoray/main/NekoGui_DataStore.hpp
+sed -i '' 's/QString direct_domain;/QString direct_domain = "geosite:cn";/' nekoray/main/NekoGui_DataStore.hpp
+sed -i '' 's/int language = 0;/int language = 2;/' nekoray/main/NekoGui_DataStore.hpp
+sed -i '' 's/bool remember_enable = false;/bool remember_enable = true;/' nekoray/main/NekoGui_DataStore.hpp
+sed -i '' 's/int inbound_http_port = -2081;/int inbound_http_port = 2081;/' nekoray/main/NekoGui_DataStore.hpp
+sed -i '' 's/block_domain =/block_domain = "";/' nekoray/main/NekoGui.cpp
+sed -i '' '/geosite:category-ads-all/d' nekoray/main/NekoGui.cpp
+sed -i '' '/domain:/d' nekoray/main/NekoGui.cpp
+sed -i '' 's/https:\/\/api.github.com\/repos\/MatsuriDayo\/nekoray\/releases/https:\/\/api.github.com\/repos\/autoxtls\/nekoray-macos\/releases/' nekoray/go/grpc_server/update.go
+sed -i '' 's/https:\/\/matsuricom.pages.dev\//https:\/\/autoxtls.github.io\//' nekoray/ui/mainwindow.cpp
 
 # Check and install dependencies if not already installed
 
@@ -110,7 +120,7 @@ macdeployqt "$nApp" -verbose=3
 
 # Download data files for both amd64 and arm64
 curl -fLso "$nApp/Contents/MacOS/geoip.dat" "https://github.com/Loyalsoldier/v2ray-rules-dat/releases/latest/download/geoip.dat"
-curl -fLso "$nApp/Contents/MacOS/geosite.dat" "https://github.com/v2fly/domain-list-community/releases/latest/download/dlc.dat"
+curl -fLso "$nApp/Contents/MacOS/geosite.dat" "https://github.com/Loyalsoldier/v2ray-rules-dat/releases/latest/download/geosite.dat"
 curl -fLso "$nApp/Contents/MacOS/geoip.db" "https://github.com/SagerNet/sing-geoip/releases/latest/download/geoip.db"
 curl -fLso "$nApp/Contents/MacOS/geosite.db" "https://github.com/SagerNet/sing-geosite/releases/latest/download/geosite.db"
 
