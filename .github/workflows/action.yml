@@ -2,34 +2,29 @@ name: Build and Release Nekoray
 
 on:
   schedule:
-     - cron: '0 0 * * 0'  # Run every Sunday at midnight UTC
+    - cron: '0 0 * * *'  # Run every day at midnight UTC
   push:
     branches: [main]
+  workflow_dispatch:
+    inputs:
+      publish:
+        description: 'Publish: If want ignore'
+        required: false
+      artifact-pack:
+        description: 'artifact-pack: If want ignore'
+        required: false
 
 jobs:
-  check_tag:
-    runs-on: ubuntu-latest
-    steps:
-      - uses: actions/checkout@v2
-      - name: Check latest tag
-        id: check_tag
-        if: github.event_name != 'push'
-        run: |
-          tag1=$(curl -s https://api.github.com/repos/MatsuriDayo/nekoray/tags | jq -r '.[0].name')
-          tag2=$(curl -s https://api.github.com/repos/$GITHUB_REPOSITORY/tags | jq -r '.[0].name')
-          echo "Latest tag on MatsuriDayo/nekoray: $tag1"
-          echo "Latest tag on this repository: $tag2"
-          if [[ "$tag1" == "$tag2" ]]; then
-            echo "Latest tags match! Aborting workflow."
-            exit 1
-          fi
-          
   build:
     runs-on: macos-latest
-    needs: check_tag
 
     steps:
       - uses: actions/checkout@v2
+
+      - name: Set up Go
+        uses: actions/setup-go@v2
+        with:
+          go-version: ^1.21
 
       - name: Build Nekoray
         run: |
@@ -129,21 +124,24 @@ jobs:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         with:
           tag_name: ${{ env.latest_tag }}
-          release_name: ${{ env.latest_tag }} macOS (Intel + Apple)
-          body: Built on the original repository. ${{ env.latest_tag }}
+          release_name: ${{ env.latest_tag }}
+          body: Built on the original repository.
           draft: false
           published: true
           prerelease: ${{ contains(env.latest_tag, 'pre') }}
           
+      - name: Set Release URL
+        run: echo "RELEASE_URL=${{ steps.create_release.outputs.upload_url }}" >> $GITHUB_ENV
+
       - name: Upload Release Asset for amd64
         id: upload_release_asset_amd64
         uses: actions/upload-release-asset@v1
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         with:
-          upload_url: ${{ steps.create_release.outputs.upload_url }}
+          upload_url: ${{ env.RELEASE_URL }}
           asset_path: nekoray_amd64.zip
-          asset_name: nekoray_amd64.zip
+          asset_name: nekoray-${{ env.latest_tag }}-macos-amd64.zip
           asset_content_type: application/zip
 
       - name: Upload Release Asset for arm64
@@ -152,7 +150,7 @@ jobs:
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         with:
-          upload_url: ${{ steps.create_release.outputs.upload_url }}
+          upload_url: ${{ env.RELEASE_URL }}
           asset_path: nekoray_arm64.zip
-          asset_name: nekoray_arm64.zip
+          asset_name: nekoray-${{ env.latest_tag }}-macos-arm64.zip
           asset_content_type: application/zip
