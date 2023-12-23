@@ -42,6 +42,7 @@ for repo_info in "${repos[@]}"; do
   clone_or_update_repo "$repo" "$url"
 done
 
+extraCode="\n        } else { \n            direct_ip = \"\";\n            direct_domain = \"\";\n            proxy_ip = \"\";\n            proxy_domain = \"\";\n            block_ip = \"\";\n            block_domain = \"\";"
 sed -i '' 's/QString direct_ip;/QString direct_ip = "geoip:cn\\ngeoip:private";/' nekoray/main/NekoGui_DataStore.hpp
 sed -i '' 's/QString direct_domain;/QString direct_domain = "geosite:cn";/' nekoray/main/NekoGui_DataStore.hpp
 sed -i '' 's/int language = 0;/int language = 2;/' nekoray/main/NekoGui_DataStore.hpp
@@ -50,6 +51,7 @@ sed -i '' 's/int inbound_http_port = -2081;/int inbound_http_port = 2081;/' neko
 sed -i '' 's/block_domain =/block_domain = "";/' nekoray/main/NekoGui.cpp
 sed -i '' '/geosite:category-ads-all/d' nekoray/main/NekoGui.cpp
 sed -i '' '/domain:/d' nekoray/main/NekoGui.cpp
+sed -i '' "/block_domain = \"\";/s/$/$extraCode/" nekoray/main/NekoGui.cpp
 sed -i '' 's/https:\/\/api.github.com\/repos\/MatsuriDayo\/nekoray\/releases/https:\/\/api.github.com\/repos\/autoxtls\/nekoray-macos\/releases/' nekoray/go/grpc_server/update.go
 sed -i '' 's/https:\/\/matsuricom.pages.dev\//https:\/\/autoxtls.github.io\//' nekoray/ui/mainwindow.cpp
 
