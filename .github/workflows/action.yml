@@ -1,8 +1,6 @@
 name: Build and Release Nekoray
 
 on:
-  schedule:
-    - cron: '0 0 * * *'  # Run every day at midnight UTC
   push:
     branches: [main]
   workflow_dispatch:
